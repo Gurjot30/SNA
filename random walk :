@@ -1,0 +1,35 @@
+import networkx as nx
+import random
+def random_walk(G, start, steps=10):
+    walk = [start]
+    for _ in range(steps):
+        neighbors = list(G.neighbors(walk[-1]))
+        if not neighbors: break
+        walk.append(random.choice(neighbors))
+    return walk
+def hitting_time(G, start, target, trials=1000, max_steps=1000):
+    times = []
+    for _ in range(trials):
+        current = start
+        for step in range(1, max_steps + 1):
+            neighbors = list(G.neighbors(current))
+            if not neighbors: break
+            current = random.choice(neighbors)
+            if current == target:
+                times.append(step)
+                break
+    return sum(times)/len(times) if times else float('inf')
+def commute_time(G, node1, node2, trials=1000):
+    ht1 = hitting_time(G, node1, node2, trials)
+    ht2 = hitting_time(G, node2, node1, trials)
+    return ht1 + ht2
+# Example social network
+G = nx.Graph()
+G.add_edges_from([
+    (0, 1), (1, 2), (2, 3),
+    (3, 4), (4, 5), (1, 5),
+    (5, 6), (6, 7), (7, 0)
+])
+print("Random Walk from node 0:", random_walk(G, 0, steps=10))
+print("Hitting Time from 0 to 5:", hitting_time(G, 0, 5))
+print("Commute Time between 0 and 5:", commute_time(G, 0, 5))

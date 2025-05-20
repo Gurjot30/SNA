@@ -1,0 +1,21 @@
+import networkx as nx
+def pagerank(graph, d=0.85, max_iter=100):
+    N = len(graph)
+    rank = {node: 1/N for node in graph}  
+    for _ in range(max_iter):
+        new_rank = {}
+        for node in graph:
+            total = 0
+            for other in graph:
+                if node in graph.successors(other):
+                    total += rank[other] / len(list(graph.successors(other)))
+                if len(list(graph.successors(other))) == 0:  # Dangling node
+                    total += rank[other] / N
+            new_rank[node] = (1 - d)/N + d * total
+        rank = new_rank
+
+    return rank
+# Example
+G = nx.DiGraph()
+G.add_edges_from([(0, 1), (1, 2), (2, 0), (2, 3)])
+print("PageRank:", pagerank(G))

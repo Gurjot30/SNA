@@ -1,0 +1,36 @@
+Markov:
+import numpy as np
+import networkx as nx
+
+def normalize(matrix):
+    return matrix / matrix.sum(axis=0)
+def expand(matrix):
+    return np.linalg.matrix_power(matrix, 2)
+def inflate(matrix, inflation):
+    matrix = np.power(matrix, inflation)
+    return normalize(matrix)
+def add_loops(matrix):
+    np.fill_diagonal(matrix, 1)
+    return matrix
+def mcl(graph, inflation=2, max_steps=100, tol=1e-5):
+    A = nx.to_numpy_array(graph)
+    A = add_loops(A)
+    A = normalize(A)
+
+    for _ in range(max_steps):
+        old = A.copy()
+        A = expand(A)
+        A = inflate(A, inflation)
+        if np.allclose(A, old, atol=tol):
+            break
+
+    clusters = []
+    for i in range(len(A)):
+        cluster = np.where(A[i] > 0)[0]
+        if list(cluster) not in clusters:
+            clusters.append(list(cluster))
+    return clusters
+# Example
+G = nx.Graph()
+G.add_edges_from([(0,1),(1,2),(2,0),(3,4),(4,5),(5,3),(6,7)])
+print("Clusters:", mcl(G))
